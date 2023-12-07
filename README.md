@@ -8,6 +8,6 @@ We are the Quantitative Reading Club from NYCU, dedicated to developing profitab
 - Email: jameschiu5487@gmail.com
 
 [Tzu-Hao Lin]
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [Your LinkedIn Profile](https://www.linkedin.com/in/your-linkedin-profile/)
-- Email: your.email@example.com
+- GitHub: [zzhh956](https://github.com/zzhh956)
+- LinkedIn: [Tzu-Hao Lin](https://www.linkedin.com/in/tzu-hao-lin-1357b720a/)
+- Email: ok10155096@gmail.com
