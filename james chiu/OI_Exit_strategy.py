@@ -91,7 +91,8 @@ class Strategy():
         df = self.df.copy()
         # params
         OI_window_MA_f = int(params['OI_window_MA_f'])
-        OI_window_MA_s = int(params['OI_window_MA_s'])
+        OI_window_MA_s = int(params['OI_window_MA_s']) + OI_window_MA_f
+        # 因為你慢線一定要大於快線，所以直接用快線加上慢線的參數讓他等於慢線這樣就不會有慢線小於快線的參數浪費
         RV_window = int(params['RV_window'])
         RV_period = int(params['RV_period'])
         BBand_mult = int(params['BBand_mult'])
@@ -166,8 +167,8 @@ class Strategy():
         elif side == 'short':
             long_entry = False
             long_exit = False
-
-        pf = vbt.Portfolio.from_signals(df['close'],  # type: ignore
+        price = df['open'].shift(-1)
+        pf = vbt.Portfolio.from_signals(price,  # type: ignore
                                         open=df['open'],
                                         high=df['high'],
                                         low=df['low'],
