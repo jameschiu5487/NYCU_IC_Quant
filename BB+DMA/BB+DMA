@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Load data
+data = pd.read_csv('C:\\Users\\Lin\\Desktop\\BTC_USD Bitfinex Historical Data.csv')
+
+# Preprocessing
+plt.plot(data['Close'])
+if data['Close'].isnull().any():
+    data['Close'].fillna(data['Close'].shift(1), inplace=True)
+
+# Calculate moving averages
+data['SMA'] = data['Close'].rolling(7).mean()
+data['LMA'] = data['Close'].rolling(42).mean()
+
+# Calculate Bollinger Bands
+data['BB_upper'] = data['SMA'] + 1*data['Close'].rolling(7).std()
+data['BB_lower'] = data['SMA'] - 1*data['Close'].rolling(7).std()
+
+data.dropna(inplace=True)
+
+# Update crossover and crossunder with Bollinger Band conditions
+def crossover(over, down, close, bb_upper):
+    return (over > down) & (over.shift(1) < down.shift(1)) & (close > bb_upper)
+
+def crossunder(down, over, close, bb_lower):
+    return (down < over) & (down.shift(1) > over.shift(1)) & (close < bb_lower)
+
+# Create signals
+signal = pd.DataFrame(index=data.index)
+signal['long_entry'] = crossover(data['SMA'], data['LMA'], data['Close'], data['BB_upper'])
+signal['short_entry'] = crossunder(data['SMA'], data['LMA'], data['Close'], data['BB_lower'])
+signal['long_exit'] = crossunder(data['SMA'], data['LMA'], data['Close'], data['BB_lower'])  # Exiting long when SMA crosses below LMA or price drops below BB_lower
+signal['short_exit'] = crossover(data['SMA'], data['LMA'], data['Close'], data['BB_upper'])  # Exiting short when SMA crosses above LMA or price rises above BB_upper
+
+# Plotting
+plt.figure(figsize=(15, 7))
+plt.plot(data['Close'], label='Close Price')
+plt.plot(data['SMA'], label='Short-term MA')
+plt.plot(data['LMA'], label='Long-term MA')
+plt.plot(data['BB_upper'], label='Upper Bollinger Band', linestyle='--')
+plt.plot(data['BB_lower'], label='Lower Bollinger Band', linestyle='--')
+plt.plot(signal['long_entry'].loc[signal['long_entry']].index, data['Close'][signal['long_entry']], '^', color='g', markersize=12)
+plt.plot(signal['short_entry'].loc[signal['short_entry']].index, data['Close'][signal['short_entry']], 'v', color='r', markersize=12)
+plt.title('Bitcoin Price, Moving Averages, and Bollinger Bands')
+plt.legend()
+plt.show()
+
+pf = vbt.Portfolio.from_signals(data['Close'],
+                                entries=signal['long_entry'],
+                                exits=signal['long_exit'],
+                                short_entries=signal['short_entry'],
+                                short_exits=signal['short_exit'],
+                                freq='d')
+pf.stats()
+
+fig = pf.plot(subplots=['cum_returns', 'orders', 'trade_pnl'])
+fig.show()
